@@ -911,3 +911,221 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+-- ===== diagnostics config =====--
+
+-- marks in sign column 
+vim.opt.signcolumn = 'yes:1' -- recommended
+vim.opt.laststatus = 2
+-- define error/warn signs
+vim.fn.sign_define("warning", { text = "W", texthl="DiagnosticWarn" })
+vim.fn.sign_define("error", { text = "E", texthl="DiagnosticError", linehl="DiagnosticError" })
+
+-- configure diagnostic types
+vim.diagnostic.config({
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = 'E',
+			[vim.diagnostic.severity.WARN] = 'W',
+		},
+		linehl = {
+			[vim.diagnostic.severity.ERROR] = "ErrorMsg",
+			[vim.diagnostic.severity.WARN] = "WarningMsg",
+		},
+		numhl = {
+			[vim.diagnostic.severity.WARN] = "WarningMsg",
+		},
+	},
+	virtual_text = {severity = vim.diagnostic.severity.ERROR},
+	float={border="single", header=""},
+})
+
+--===== highlights =====--
+
+-- make comments a bit brighter
+vim.api.nvim_set_hl(0, "Comment", {fg='grey'})
+
+-- sign col same colours as linenr
+vim.api.nvim_set_hl(0, "SignColumn", { link="LineNr" })
+
+-- genero syntaxes groups
+vim.api.nvim_set_hl(0, "fglVarM", { link="@variable" })
+vim.api.nvim_set_hl(0, "fglVarL", { link="@variable" })
+vim.api.nvim_set_hl(0, "fglVarP", { link="@variable" })
+
+vim.cmd.hi("FlashLabel guibg='#494d64'")
+vim.api.nvim_set_hl(0, "FlashLabel", {link="CurSearch"})
+
+-- do not underline error/warnings
+vim.cmd.hi("DiagnosticUnderlineError cterm=bold term=bold gui=bold guifg=#dc4f62 guibg=#362d29")
+vim.cmd.hi("DiagnosticUnderlineWarn cterm=bold term=bold gui=bold guibg=#343727")
+
+-- cursorline and cursorcolumn
+vim.api.nvim_set_hl(0, "LineNr", { link="StatusLine" })
+vim.cmd.hi("CursorLineNr guifg='pink'")
+vim.api.nvim_set_hl(0, "CursorColumn", { link="CursorLine" })
+
+-- current search highlighting
+vim.api.nvim_set_hl(0, "CurSearch", { bg='pink', fg='black' })
+
+-- vim.cmd.hi("StatusLineNC guibg='pink'")
+
+vim.api.nvim_set_hl(0, "BufferLineSelected", {bg="pink" })
+
+-- add underline on non focused window status lines
+vim.cmd.hi("StatusLineNC gui='underline'")
+
+-- we want status column same colours as statusline but with no underline
+vim.api.nvim_set_hl(0, "StatusColumnGutter", {
+	bg=vim.api.nvim_get_hl(0, {name="StatusLineNC"}).bg,
+	fg=vim.api.nvim_get_hl(0, {name="StatusLineNC"}).fg,
+	underline=false,
+})
+vim.opt.statuscolumn = [[%s%=%l%=%#StatusColumnGutter#│]]
+
+--===== set all mappings =====--
+
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+-- Diagnostic keymaps
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+
+-- Keybinds to make split navigation easier.
+--  Use CTRL+<hjkl> to switch between windows
+--
+--  See `:help wincmd` for a list of all window commands
+vim.keymap.set('n', '<C-left>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-down>', '<C-w><C-down>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-up>', '<C-w><C-up>', { desc = 'Move focus to the upper window' })
+
+-- See `:help telescope.builtin`
+local builtin = require 'telescope.builtin'
+vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
+vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
+vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
+vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+--vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+-- Slightly advanced example of overriding default behavior and theme
+vim.keymap.set('n', '<leader>/', function()
+-- You can pass additional configuration to Telescope to change the theme, layout, etc.
+builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+  winblend = 10,
+  previewer = false,
+})
+end, { desc = '[/] Fuzzily search in current buffer' })
+
+-- It's also possible to pass additional configuration options.
+--  See `:help telescope.builtin.live_grep()` for information about particular keys
+vim.keymap.set('n', '<leader>s/', function()
+builtin.live_grep {
+  grep_open_files = true,
+  prompt_title = 'Live Grep in Open Files',
+}
+end, { desc = '[S]earch [/] in Open Files' })
+
+-- Shortcut for searching your Neovim configuration files
+vim.keymap.set('n', '<leader>sn', function()
+builtin.find_files { cwd = vim.fn.stdpath 'config' }
+end, { desc = '[S]earch [N]eovim files' })
+
+-- gr to get references/grep string
+vim.keymap.set("n", "gr", require("telescope.builtin").grep_string, { desc = "[g]et [r]eferences to string under cursor"})
+
+-- def to get where a function is defined (grep FUNCTION x)
+vim.keymap.set("n", "def", function()
+  local cur_word = vim.fn.expand("<cword>")
+  local search = "FUNCTION " .. cur_word
+ require("telescope.builtin").grep_string({ search = search })
+end, {desc = "find [def]inition of function under cursor"})
+
+-- toggle Flash search on/off
+vim.keymap.set("n", "<leader>F", function() require("flash").toggle(true) end, {desc="Toggle [F]lash"})
+
+-- cycle thru buffers
+vim.keymap.set("n", "[b", ":bprev<CR>", {desc="Prev buffer", silent=true})
+vim.keymap.set("n", "]b", ":bnext<CR>", {desc="Next buffer", silent=true})
+
+
+-- navigate BufferLine
+vim.keymap.set("n", "<leader>bp", function()
+	require("bufferline").pick()
+end, {desc="[p]ick [b]uffer to go to"})
+
+vim.keymap.set("n", "<leader>bc", function()
+	require("bufferline").close_with_pick()
+end, {desc="pick [b]uffer to [c]lose"})
+--===== autocommands =====--
+
+-- go to last loc when opening a buffer
+local function augroup(name)
+  return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
+end
+vim.api.nvim_create_autocmd("BufReadPost", {
+  group = augroup("last_loc"),
+  callback = function(event)
+    local exclude = { "gitcommit" }
+    local buf = event.buf
+    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then
+      return
+    end
+    vim.b[buf].lazyvim_last_loc = true
+    local mark = vim.api.nvim_buf_get_mark(buf, '"')
+    local lcount = vim.api.nvim_buf_line_count(buf)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+-- show line number in telescope previews
+vim.cmd "autocmd User TelescopePreviewerLoaded setlocal number"
+
+
+-- no cursorline or cursorcolumn in inactive buffer
+vim.api.nvim_create_augroup("CursorLine", {})
+vim.api.nvim_create_autocmd({"VimEnter", "WinEnter", "BufWinEnter"}, {
+	group = "CursorLine",
+	pattern = "*",
+	callback = function()
+		vim.opt.cursorline = true
+		vim.opt.cursorcolumn = true
+	end,
+})
+vim.api.nvim_create_autocmd("WinLeave", {
+	group = "CursorLine",
+	pattern = "*",
+	callback = function()
+		vim.opt.cursorline = false
+		vim.opt.cursorcolumn = false
+
+end,
+})
+
+
+--===== snippets =====--
+
+-- get custom snippets
+require("snippets")
+local ls = require("luasnip")
+-- navigating snippets
+vim.keymap.set({"i"}, "<C-Up>", function() ls.expand() end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-Right>", function() ls.jump(1) end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-Left>", function() ls.jump(-1) end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-Down>", function()
+	if ls.choice_active() then
+		ls.change_choice(1)
+	end
+end, {silent = true})
+
+
