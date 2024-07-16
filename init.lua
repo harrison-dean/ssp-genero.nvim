@@ -272,30 +272,58 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
+	{
+		"folke/which-key.nvim",
+		event = "VeryLazy",
+		keys = {
+			{
+				"<leader>?",
+				function()
+					require("which-key").show({ global = false })
+				end,
+				desc = "Buffer Local Keymaps (which-key)",
+			},
+		},
+		config = function()
+			local wk = require("which-key")
+			wk.add({
+				{ "<leader>b", group = "Buffer navigation" },
+				{ "<leader>s", group = "Search" },
 
-  { -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
+			})
 
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-        ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-        ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
-      }
-      -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
-      }, { mode = 'v' })
-    end,
-  },
-
+			wk.setup({
+			icons = {
+				rules = false,
+				keys = {
+						Esc = "Esc",
+						Space = "Space",
+						C = "C-",
+						M = "A-",
+						S = "S-",
+						CR = "Ret",
+						Up = "Up",
+						Down = "Down",
+						Left = "Left",
+						Right = "Right",
+						Tab = "Tab",
+						F1 = "F1",
+						F2 = "F2",
+						F3 = "F3",
+						F4 = "F4",
+						F5 = "F5",
+						F6 = "F6",
+						F7 = "F7",
+						F8 = "F8",
+						F9 = "F9",
+						F10 = "F10",
+						F11 = "F11",
+						F12 = "F12",
+					},
+				},
+			})
+		end,
+	},
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
